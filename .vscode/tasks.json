@@ -1,0 +1,23 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "generate migration",
+			"type": "shell",
+			"command": "yarn migration:generate ./src/migrations/${input:migrationName}"
+		},
+		{
+			"label": "run migration",
+			"type": "shell",
+			"command": "yarn migration:run"
+		},
+	],
+	"inputs": [
+		{
+		  "id": "migrationName",
+		  "description": "Name of the migration",
+		  "default": "NewMigration",
+		  "type": "promptString"
+		},
+	]
+}
