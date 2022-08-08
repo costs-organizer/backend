@@ -1,5 +1,5 @@
 {
-  "endOfLine": "lf",
+  "endOfLine": "auto",
   "parser": "babel-ts",
   "singleQuote": true,
   "trailingComma": "all",

@@ -1,1 +1,1 @@
-export { BaseDateEntity } from './base-date-entity';
+export { BaseDateEntity } from '../../entities/base-date-entity';

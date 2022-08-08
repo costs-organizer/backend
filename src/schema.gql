@@ -2,6 +2,76 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Transaction {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  moneyAmount: Float!
+  receiver: Group!
+  receiverId: Float!
+  payer: User!
+  payerId: Float!
+  group: Group!
+  groupId: Float!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Notification {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  decription: String!
+  isCompleted: Boolean!
+  createdBy: User!
+  createdById: Int!
+  receivers: [User!]!
+  group: Group!
+  groupId: Int!
+  type: NotificationType!
+}
+
+enum NotificationType {
+  TRANSACTION_RECEIVED
+  GROUP_SETTLED
+  REMINDER
+}
+
+type Cost {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  name: String!
+  decription: String!
+  moneyAmount: Float!
+  isCompleted: Boolean!
+  createdBy: User!
+  createdById: Float!
+  participants: [User!]!
+  group: [Group!]!
+  groupId: Float!
+}
+
+type Group {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  name: String!
+  createdBy: User!
+  createdById: User!
+  members: [User!]!
+  transactions: [Transaction!]!
+  costs: [Transaction!]!
+  notifications: [Notification!]!
+}
+
 type User {
   id: Int!
   createdAt: DateTime
@@ -11,22 +81,40 @@ type User {
   email: String!
   passwordHash: String!
   passwordSalt: String!
+  createdGroups: [Group!]!
+  joinedGroups: [Group!]!
+  receivedTransactions: [Transaction!]!
+  paidTransactions: [Transaction!]!
+  participatedCosts: [Cost!]!
+  createdCosts: [Cost!]!
+  receivedNotifications: [Notification!]!
+  createdNotifications: [Notification!]!
 }
 
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
 type Query {
-  users: [User!]!
+  users(findAllInput: FindAllInput!): [User!]!
   user(id: Int!): User!
+  groups(findAllInput: FindAllGroupsInput!): [Group!]!
+  group(id: Int!): Group!
+}
+
+input FindAllInput {
+  search: String
+  groupId: Float
+}
+
+input FindAllGroupsInput {
+  search: String
 }
 
 type Mutation {
-  register(registerInput: RegisterInput!): User!
-  login(loginInput: LoginInput!): User!
+  updateUser(updateUserInput: FindAllInput!): Int!
   removeUser(id: Int!): User!
+  register(registerInput: RegisterInput!): User!
+  login(loginInput: LoginInput!): String!
+  createGroup(createGroupInput: CreateGroupInput!): Int!
+  addNewUsers(addNewUsersInput: AddNewUsersInput!): [Int!]!
+  removeUserFromGroup(removeUserFromGroupInput: RemoveUserFromGroupInput!): Int!
 }
 
 input RegisterInput {
@@ -36,7 +124,21 @@ input RegisterInput {
 }
 
 input LoginInput {
-  email: String
-  password: String
-  name: String
+  password: String!
+  name: String!
+}
+
+input CreateGroupInput {
+  name: String!
+  userIds: [Int!]!
+}
+
+input AddNewUsersInput {
+  groupId: Int!
+  userIds: [Int!]!
+}
+
+input RemoveUserFromGroupInput {
+  groupId: Int!
+  userId: Int!
 }

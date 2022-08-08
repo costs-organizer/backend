@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../entities';
+import { User } from '../../entities';
 import { Repository } from 'typeorm';
-import { LoginInput, RegisterInput } from '../dto';
+import { LoginInput, RegisterInput } from './dto';
 import { AuthHelper } from './auth.helper';
 
 @Injectable()
@@ -32,7 +32,7 @@ export class AuthService {
   }
 
   public async login(body: LoginInput): Promise<string | never> {
-    const { name, password }: LoginInput = body;
+    const { name, password } = body;
     const em = this.repository.createQueryBuilder();
     const user: User = await em.where('"username" = :name', { name }).getOne();
 

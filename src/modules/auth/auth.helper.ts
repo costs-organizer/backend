@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
-import { User } from '../entities';
+import { User } from '../../entities';
 import { EncodedPasswordRes } from './auth.types';
 
 @Injectable()
@@ -26,14 +26,14 @@ export class AuthHelper {
     return this.jwt.decode(token, null);
   }
 
-  // Get User by User ID we get from decode()
-  //   public async validateUser(decoded: any): Promise<User> {
-  //     return this.repository.add(decoded.id);
-  //   }
+  //   Get User by User ID we get from decode()
+  public async validateUser(decoded: any): Promise<User> {
+    return this.repository.findOne({ where: { id: decoded.id } });
+  }
 
   // Generate JWT Token
   public generateToken(user: User): string {
-    return this.jwt.sign({ id: user.id, email: user.email });
+    return this.jwt.sign({ id: user.id, email: user.username });
   }
 
   // Validate User's password
@@ -59,7 +59,7 @@ export class AuthHelper {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
 
-    const user: User = null; //TODO: CHANGE IT
+    const user: User = await this.validateUser(decoded);
 
     if (!user) {
       throw new UnauthorizedException();

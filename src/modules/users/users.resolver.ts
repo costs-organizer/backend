@@ -1,30 +1,26 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { User } from './entities';
-import { LoginInput, RegisterInput } from './dto';
-import { Inject } from '@nestjs/common';
-import { AuthService } from './auth';
+import { User } from '../../entities';
+import { Inject, UseGuards } from '@nestjs/common';
+import { FindAllInput } from './find-all.input';
+import { JwtAuthGuard } from '../auth/auth.guard';
+import { CurrentUser } from 'src/shared/decorators';
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(
     @Inject(UsersService) private readonly usersService: UsersService,
-    @Inject(AuthService) private readonly authService: AuthService,
   ) {}
 
-  @Mutation(() => User)
-  register(@Args('registerInput') registerInput: RegisterInput) {
-    return this.authService.register(registerInput);
-  }
-
-  @Mutation(() => User)
-  login(@Args('loginInput') loginInput: LoginInput) {
-    return this.authService.login(loginInput);
-  }
-
+  @UseGuards(JwtAuthGuard)
   @Query(() => [User], { name: 'users' })
-  findAll() {
-    return this.usersService.findAll();
+  async findAll(
+    @CurrentUser() currentUser: User,
+    @Args('findAllInput') findAllInput: FindAllInput,
+    @Context() context: any,
+  ) {
+    console.log(context.req);
+    return await this.usersService.findAll(findAllInput);
   }
 
   @Query(() => User, { name: 'user' })
@@ -32,10 +28,17 @@ export class UsersResolver {
     return this.usersService.findOne(id);
   }
 
-  // @Mutation(() => User)
-  // updateUser(@Args('updateUserInput') updateUserInput: LoginInput) {
-  //   return this.usersService.update(updateUserInput.id, updateUserInput);
-  // }
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Int)
+  updateUser(
+    @CurrentUser() currentUser: User,
+    @Args('updateUserInput') updateUserInput: FindAllInput,
+    @Context() context: any,
+  ) {
+    console.log(context.req);
+    console.log(Object.keys(updateUserInput), currentUser);
+    return 1;
+  }
 
   @Mutation(() => User)
   removeUser(@Args('id', { type: () => Int }) id: number) {

@@ -9,6 +9,8 @@ import { getEnvPath } from './shared/utils';
 import { TypeOrmConfigService } from './shared';
 import { UsersModule } from './modules/users/users.module';
 import { join } from 'path';
+import { AuthModule } from './modules/auth/auth.module';
+import { GroupsModule } from './modules/groups/groups.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}/..`);
 
@@ -17,10 +19,14 @@ const envFilePath: string = getEnvPath(`${__dirname}/..`);
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
+      playground: true,
+      debug: true,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       driver: ApolloDriver,
     }),
     UsersModule,
+    AuthModule,
+    GroupsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
