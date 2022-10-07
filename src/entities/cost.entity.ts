@@ -1,5 +1,4 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { BaseDateEntity } from 'src/modules/base';
 import {
   Entity,
   Column,
@@ -8,6 +7,7 @@ import {
   JoinTable,
   ManyToMany,
 } from 'typeorm';
+import { BaseDateEntity } from './base-date-entity';
 import { Group } from './group.entity';
 import { User } from './user.entity';
 
@@ -20,15 +20,11 @@ export class Cost extends BaseDateEntity {
 
   @Field()
   @Column()
-  decription: string;
+  description: string;
 
   @Field()
-  @Column(() => Number)
+  @Column('int')
   moneyAmount: number;
-
-  @Field()
-  @Column(() => Boolean)
-  isCompleted: boolean;
 
   @Field(() => User)
   @ManyToOne(() => User, { onDelete: 'SET NULL' })

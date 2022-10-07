@@ -8,10 +8,10 @@ import {
   CreateGroupInput,
   FindAllGroupsInput,
   RemoveUserFromGroupInput,
+  AddNewUsersInput,
 } from './dto';
-import { AddNewUsersInput } from './dto/add-new-users.input';
 
-@Resolver(() => User)
+@Resolver(() => Group)
 export class GroupsResolver {
   constructor(
     @Inject(GroupsService) private readonly groupsService: GroupsService,
@@ -61,7 +61,6 @@ export class GroupsResolver {
     @Args('removeUserFromGroupInput')
     removeUserFromGroupInput: RemoveUserFromGroupInput,
   ): Promise<number> {
-    console.log(currentUser, removeUserFromGroupInput);
     return await this.groupsService.removeUserFromGroup(
       removeUserFromGroupInput,
       currentUser,

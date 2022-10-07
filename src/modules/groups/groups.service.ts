@@ -25,9 +25,9 @@ export class GroupsService {
     return await em
       .leftJoinAndSelect('group.members', 'members')
       .leftJoinAndSelect('group.createdBy', 'createdBy')
+      .leftJoinAndSelect('group.notifications', 'notifications')
       .andWhere('group.deletedAt IS NULL')
       .andWhere('group.name LIKE  :name', { name: `%${search}%` })
-      .andWhere('members.id = :userId', { userId: currentUser.id })
       .getMany();
   }
 
@@ -39,7 +39,10 @@ export class GroupsService {
         group.name = groupName;
         group.createdBy = createdBy;
 
-        const members = await this.entityValidator.validateUsers(membersIds);
+        const members = await this.entityValidator.validateUsers([
+          ...membersIds,
+          createdBy.id,
+        ]);
         group.members = members;
 
         await transctionEntityManager.save(group);
@@ -51,7 +54,10 @@ export class GroupsService {
 
   async addNewUsers(currentUser: User, addNewUsersInput: AddNewUsersInput) {
     const { groupId, userIds } = addNewUsersInput;
-    const [group] = await this.entityValidator.validateGroups([groupId]);
+    const [group] = await this.entityValidator.validateGroups(
+      [groupId],
+      currentUser.id,
+    );
 
     if (group?.createdBy.id !== currentUser.id)
       throw new ValidaionException("You can't perform this action");
@@ -80,13 +86,13 @@ export class GroupsService {
   ) {
     const { groupId, userId } = removeUserFromGroupInput;
 
-    const [group] = await this.entityValidator.validateGroups([groupId]);
+    const [group] = await this.entityValidator.validateGroups(
+      [groupId],
+      currentUser.id,
+    );
 
     if (group?.createdBy.id !== currentUser.id)
       throw new ValidaionException("You can't perform this action");
-
-    if (!group.members.some(({ id }) => id === userId))
-      throw new ValidaionException("Such user doesn't belong to this group");
 
     await this.entityValidator.validateUsers([userId]);
 
@@ -103,10 +109,15 @@ export class GroupsService {
 
   async findOne(currentUser: User, groupId: number) {
     const em = this.dataSource.getRepository(Group).createQueryBuilder('group');
-    return await em
+    const res = await em
       .leftJoinAndSelect('group.members', 'members')
+      .leftJoinAndSelect('group.createdBy', 'createdBy')
+      .leftJoinAndSelect('group.costs', 'costs')
+      .leftJoinAndSelect('costs.createdBy', 'costCreatedBy')
+      .leftJoinAndSelect('costs.participants', 'costParticipants')
       .andWhere('group.id = :groupId', { groupId })
-      .andWhere('members.id = :userId', { userId: currentUser.id })
       .getOneOrFail();
+
+    return res;
   }
 }

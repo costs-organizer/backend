@@ -8,11 +8,11 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { BaseDateEntity } from '../modules/base';
 import { User } from './user.entity';
 import { Transaction } from './transaction.entity';
 import { Notification } from './notification.entity';
 import { Cost } from './cost.entity';
+import { BaseDateEntity } from './base-date-entity';
 
 @ObjectType()
 @Entity()
@@ -39,7 +39,7 @@ export class Group extends BaseDateEntity {
   @OneToMany(() => Transaction, (r) => r.group)
   transactions: Transaction[];
 
-  @Field(() => [Transaction])
+  @Field(() => [Cost])
   @OneToMany(() => Cost, (r) => r.group)
   costs: Cost[];
 

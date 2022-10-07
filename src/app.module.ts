@@ -11,6 +11,8 @@ import { UsersModule } from './modules/users/users.module';
 import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { GroupsModule } from './modules/groups/groups.module';
+import { CostsModule } from './modules/costs/costs.module';
+import { TransactionsModule } from './modules/transactions/transacrions.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}/..`);
 
@@ -23,10 +25,17 @@ const envFilePath: string = getEnvPath(`${__dirname}/..`);
       debug: true,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       driver: ApolloDriver,
+      context: ({ req, res }) => ({ req, res }),
+      cors: {
+        origin: ['http://localhost:3000', 'https://localhost:3000'],
+        credentials: true,
+      },
     }),
     UsersModule,
     AuthModule,
     GroupsModule,
+    CostsModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

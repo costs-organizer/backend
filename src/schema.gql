@@ -8,7 +8,7 @@ type Transaction {
   updatedAt: DateTime
   deletedAt: DateTime
   moneyAmount: Float!
-  receiver: Group!
+  receiver: User!
   receiverId: Float!
   payer: User!
   payerId: Float!
@@ -48,9 +48,8 @@ type Cost {
   updatedAt: DateTime
   deletedAt: DateTime
   name: String!
-  decription: String!
+  description: String!
   moneyAmount: Float!
-  isCompleted: Boolean!
   createdBy: User!
   createdById: Float!
   participants: [User!]!
@@ -68,7 +67,7 @@ type Group {
   createdById: User!
   members: [User!]!
   transactions: [Transaction!]!
-  costs: [Transaction!]!
+  costs: [Cost!]!
   notifications: [Notification!]!
 }
 
@@ -92,29 +91,48 @@ type User {
 }
 
 type Query {
-  users(findAllInput: FindAllInput!): [User!]!
+  users(findAllInput: FindAllUsersInput!): [User!]!
   user(id: Int!): User!
+  me: User!
   groups(findAllInput: FindAllGroupsInput!): [Group!]!
   group(id: Int!): Group!
+  cost(id: Int!): Cost!
+  costs(findAllInput: FindAllCostsInput!): [Cost!]!
+  transactions(findAllInput: FindAllTransactionsInput!): [Transaction!]!
+  transaction(transactionId: Int!): Transaction!
 }
 
-input FindAllInput {
+input FindAllUsersInput {
   search: String
   groupId: Float
 }
 
 input FindAllGroupsInput {
-  search: String
+  search: String = ""
+}
+
+input FindAllCostsInput {
+  groupId: Int!
+  filterByName: Boolean = false
+}
+
+input FindAllTransactionsInput {
+  groupId: Int!
+  filterByUser: Boolean = false
 }
 
 type Mutation {
-  updateUser(updateUserInput: FindAllInput!): Int!
   removeUser(id: Int!): User!
   register(registerInput: RegisterInput!): User!
   login(loginInput: LoginInput!): String!
+  logout: String!
   createGroup(createGroupInput: CreateGroupInput!): Int!
   addNewUsers(addNewUsersInput: AddNewUsersInput!): [Int!]!
   removeUserFromGroup(removeUserFromGroupInput: RemoveUserFromGroupInput!): Int!
+  createCost(createCostInput: CreateCostInput!): Int!
+  joinCost(costId: Int!): Int!
+  removeCost(costId: Int!): Int!
+  completeTransaction(transactionId: Int!): Int!
 }
 
 input RegisterInput {
@@ -141,4 +159,12 @@ input AddNewUsersInput {
 input RemoveUserFromGroupInput {
   groupId: Int!
   userId: Int!
+}
+
+input CreateCostInput {
+  name: String!
+  description: String!
+  moneyAmount: Int!
+  participantsIds: [Int!]!
+  groupId: Int!
 }

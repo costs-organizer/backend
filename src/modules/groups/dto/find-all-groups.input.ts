@@ -6,6 +6,6 @@ import { IsString } from 'class-validator';
 export class FindAllGroupsInput {
   @IsString()
   @Trim()
-  @Field({ nullable: true })
+  @Field({ nullable: true, defaultValue: '' })
   public readonly search?: string;
 }

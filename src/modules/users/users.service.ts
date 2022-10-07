@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entities';
-import { FindAllInput } from './find-all.input';
+import { FindAllUsersInput } from './find-all.input';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
   ) {}
-  async findAll(body: FindAllInput) {
+  async findAll(body: FindAllUsersInput) {
     const { groupId, search } = body;
     const em = this.usersRepository.createQueryBuilder('user');
     return await em
@@ -17,8 +17,9 @@ export class UsersService {
       .andWhere('user.deletedAt IS NULL')
       .andWhere('user.username LIKE  :name', { name: `%${search}%` })
       .if(!!body.groupId, (qb) =>
-        qb.andWhere('joinedGroups.id = :groupId', { groupId: groupId }),
+        qb.andWhere('joinedGroups.id = :groupId', { groupId }),
       )
+      .orderBy('user.username')
       .getMany();
   }
 

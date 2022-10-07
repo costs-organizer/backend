@@ -1,6 +1,6 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseDateEntity } from '../modules/base';
+import { BaseDateEntity } from './base-date-entity';
 import { Group } from './group.entity';
 import { User } from './user.entity';
 
@@ -14,7 +14,7 @@ export class Transaction extends BaseDateEntity {
   @Column(() => Boolean)
   isCompleted: boolean;
 
-  @Field(() => Group)
+  @Field(() => User)
   @ManyToOne(() => User, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'receiverId' })
   receiver: User;

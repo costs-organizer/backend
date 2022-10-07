@@ -1,8 +1,8 @@
-import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { User } from '../../entities';
 import { Inject, UseGuards } from '@nestjs/common';
-import { FindAllInput } from './find-all.input';
+import { FindAllUsersInput } from './find-all.input';
 import { JwtAuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
 
@@ -16,10 +16,8 @@ export class UsersResolver {
   @Query(() => [User], { name: 'users' })
   async findAll(
     @CurrentUser() currentUser: User,
-    @Args('findAllInput') findAllInput: FindAllInput,
-    @Context() context: any,
+    @Args('findAllInput') findAllInput: FindAllUsersInput,
   ) {
-    console.log(context.req);
     return await this.usersService.findAll(findAllInput);
   }
 
@@ -29,15 +27,9 @@ export class UsersResolver {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Mutation(() => Int)
-  updateUser(
-    @CurrentUser() currentUser: User,
-    @Args('updateUserInput') updateUserInput: FindAllInput,
-    @Context() context: any,
-  ) {
-    console.log(context.req);
-    console.log(Object.keys(updateUserInput), currentUser);
-    return 1;
+  @Query(() => User)
+  me(@CurrentUser() currentUser: User) {
+    return currentUser;
   }
 
   @Mutation(() => User)

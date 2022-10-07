@@ -1,8 +1,9 @@
-import { Resolver, Mutation, Args } from '@nestjs/graphql';
-import { User } from '../../entities';
-import { LoginInput, RegisterInput } from './dto';
 import { Inject } from '@nestjs/common';
+import { Resolver, Mutation, Args, Context } from '@nestjs/graphql';
+import { Request } from 'express';
+import { User } from '../../entities';
 import { AuthService } from '../auth';
+import { LoginInput, RegisterInput } from './dto';
 
 @Resolver(() => User)
 export class AuthResolver {
@@ -14,8 +15,20 @@ export class AuthResolver {
   }
 
   @Mutation(() => String)
-  login(@Args('loginInput') loginInput: LoginInput) {
-    return this.authService.login(loginInput);
+  async login(
+    @Args('loginInput') loginInput: LoginInput,
+    @Context('req') req: Request,
+  ) {
+    const token = await this.authService.login(loginInput);
+    req.res.cookie('Authorization', token);
+    console.log(token);
+    return token;
+  }
+
+  @Mutation(() => String)
+  async logout(@Context('req') req: Request) {
+    req.res.clearCookie('Authorization');
+    return '';
   }
 
   // @Mutation(() => User)

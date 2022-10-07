@@ -2,12 +2,12 @@ import { ObjectType, Field } from '@nestjs/graphql';
 import { IsEmail } from 'class-validator';
 import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 import { UniqueWhenNotDeleted } from 'src/shared/decorators';
-import { BaseDateEntity } from '../modules/base';
 import { Group } from './group.entity';
 import { Transaction } from './transaction.entity';
 import { Cost } from './cost.entity';
 import { Notification } from './notification.entity';
 import { Exclude } from 'class-transformer';
+import { BaseDateEntity } from './base-date-entity';
 
 @ObjectType()
 @Entity()
