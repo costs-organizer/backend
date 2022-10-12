@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { ValidaionException } from 'src/shared/exceptions';
 import { ObjectWithDatesGenerator } from 'src/shared/utils';
 import { EntityValidator } from 'src/shared/validators';
 import { DataSource } from 'typeorm';
 import { Cost, User } from '../../entities';
+import { AddCostCommand } from './add-cost';
 import { CreateCostInput, FindAllCostsInput } from './dto';
 
 @Injectable()
@@ -15,6 +17,7 @@ export class CostsService {
     private readonly objectWithDatesGenerator: ObjectWithDatesGenerator<Cost>,
     @Inject(EntityValidator)
     private readonly entityValidator: EntityValidator,
+    private commandBus: CommandBus,
   ) {}
 
   async findAll(currentUser: User, body: FindAllCostsInput) {
@@ -49,32 +52,7 @@ export class CostsService {
   }
 
   async createCost(currentUser: User, body: CreateCostInput) {
-    const { groupId, description, moneyAmount, name, participantsIds } = body;
-
-    const [group] = await this.entityValidator.validateGroups(
-      [groupId],
-      currentUser.id,
-    );
-    const participants = await this.entityValidator.validateUsers(
-      participantsIds,
-    );
-
-    const newCost = this.objectWithDatesGenerator.createNewObject(new Cost());
-    newCost.createdBy = currentUser;
-
-    newCost.name = name;
-    newCost.description = description;
-    newCost.moneyAmount = moneyAmount;
-    newCost.participants = participants;
-    newCost.group = group;
-
-    await this.dataSource.manager.transaction(
-      async (transctionEntityManager) => {
-        await transctionEntityManager.save(newCost);
-      },
-    );
-
-    return newCost.id;
+    return this.commandBus.execute(new AddCostCommand(currentUser, body));
   }
 
   async joinCost(currentUser: User, costId: number) {

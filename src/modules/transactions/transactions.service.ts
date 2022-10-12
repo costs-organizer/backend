@@ -55,9 +55,8 @@ export class TransactionsService {
     ]);
 
     const isCurrentUserInvolvedInTransaction =
-      transaction.receiver.id === currentUser.id
-        ? true
-        : transaction.payer.id === currentUser.id;
+      transaction.receiver.id === currentUser.id ||
+      transaction.payer.id === currentUser.id;
 
     if (!isCurrentUserInvolvedInTransaction)
       throw new ValidaionException('User is not involved in the transaction');

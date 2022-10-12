@@ -949,6 +949,13 @@
     tslib "2.4.0"
     uuid "8.3.2"
 
+"@nestjs/cqrs@^9.0.1":
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/@nestjs/cqrs/-/cqrs-9.0.1.tgz#3aaa5dbee37d5ac3670e320d6a241a076e189082"
+  integrity sha512-DsqkAaIHy9+Ot4FJybmlDQk0HBDTGztz0F3LcMnatFDQv1X56W0Y2+R/7jjwHsmHzQfbffT2FGyCOx2/9apFCg==
+  dependencies:
+    uuid "8.3.2"
+
 "@nestjs/graphql@^10.0.21":
   version "10.0.21"
   resolved "https://registry.yarnpkg.com/@nestjs/graphql/-/graphql-10.0.21.tgz#0cce5aef686a95bc3a9709649201061ee142942a"
@@ -1143,10 +1150,8 @@
   resolved "https://registry.yarnpkg.com/@sqltools/formatter/-/formatter-1.2.3.tgz#1185726610acc37317ddab11c3c7f9066966bd20"
   integrity sha512-O3uyB/JbkAEMZaP3YqyHH7TMnex7tWyCbCI4EfJdOCoN6HIhqdJBWTM6aCCiWQ/5f5wxjgU735QAIpJbjDvmzg==
 
-"@swietjak/maths-lib@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@swietjak/maths-lib/-/maths-lib-1.1.0.tgz#3da67e115bacc0dce787b88f937ca7e88379d24a"
-  integrity sha512-Ukdhje3Nt18m84wtsQKIbCgOok/4rWMdEXn9Vx8Z+ePh8BuCuUZ9vdbQuW5dW5Loo7xnQkPTSGC3nKjvLUCz0Q==
+"@swietjak/maths-lib@../maths-lib":
+  version "1.1.2"
 
 "@trivago/prettier-plugin-sort-imports@^3.3.0":
   version "3.3.0"

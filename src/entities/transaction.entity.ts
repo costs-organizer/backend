@@ -8,7 +8,7 @@ import { User } from './user.entity';
 @Entity()
 export class Transaction extends BaseDateEntity {
   @Field()
-  @Column(() => Number)
+  @Column('float4', { default: 0 })
   moneyAmount: number;
 
   @Column(() => Boolean)
