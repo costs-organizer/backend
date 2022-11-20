@@ -24,7 +24,6 @@ class BalancesCalculator {
         (usrSpending, currCost) => usrSpending + currCost.moneyAmount,
         0,
       );
-      console.log(currMember.username, spendingsAmount, debtsAmount);
       return { ...acc, [currMember.id]: spendingsAmount - debtsAmount };
     }, {} as Record<number, number>);
 

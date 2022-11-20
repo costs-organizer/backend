@@ -8,6 +8,7 @@ type Transaction {
   updatedAt: DateTime
   deletedAt: DateTime
   moneyAmount: Float!
+  isCompleted: Boolean
   receiver: User!
   receiverId: Float!
   payer: User!
@@ -26,14 +27,15 @@ type Notification {
   createdAt: DateTime
   updatedAt: DateTime
   deletedAt: DateTime
-  decription: String!
-  isCompleted: Boolean!
+  description: String
   createdBy: User!
   createdById: Int!
   receivers: [User!]!
   group: Group!
   groupId: Int!
   type: NotificationType!
+  readBy: [Int!]!
+  groupResolvedNotification: Group
 }
 
 enum NotificationType {
@@ -100,6 +102,8 @@ type Query {
   costs(findAllInput: FindAllCostsInput!): [Cost!]!
   transactions(findAllInput: FindAllTransactionsInput!): [Transaction!]!
   transaction(transactionId: Int!): Transaction!
+  notifications: [Notification!]!
+  findOne(notificationId: Int!): Notification!
 }
 
 input FindAllUsersInput {
@@ -133,6 +137,8 @@ type Mutation {
   joinCost(costId: Int!): Int!
   removeCost(costId: Int!): Int!
   completeTransaction(transactionId: Int!): Int!
+  markAsRead(notificationIds: [Int!]!): [Int!]!
+  sendReminder(transactionId: Int!): Int!
 }
 
 input RegisterInput {
@@ -167,4 +173,9 @@ input CreateCostInput {
   moneyAmount: Int!
   participantsIds: [Int!]!
   groupId: Int!
+}
+
+type Subscription {
+  transactionCompleted: Notification!
+  reminderSent: Notification!
 }

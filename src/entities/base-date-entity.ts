@@ -18,11 +18,11 @@ export class BaseDateEntity {
   @Field({ nullable: true })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', name: 'updatedAt' })
+  @UpdateDateColumn({ type: 'timestamp', name: 'updatedAt', nullable: true })
   @Field({ nullable: true })
-  updatedAt: Date;
+  updatedAt: Date | null;
 
-  @DeleteDateColumn({ type: 'timestamp', name: 'deletedAt' })
+  @DeleteDateColumn({ type: 'timestamp', name: 'deletedAt', nullable: true })
   @Field({ nullable: true })
-  deletedAt: Date;
+  deletedAt: Date | null;
 }

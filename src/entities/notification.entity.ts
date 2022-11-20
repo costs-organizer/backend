@@ -11,7 +11,7 @@ import { BaseDateEntity } from './base-date-entity';
 import { Group } from './group.entity';
 import { User } from './user.entity';
 
-enum NotificationType {
+export enum NotificationType {
   TRANSACTION_RECEIVED = 'TRANSACTION_RECEIVED',
   GROUP_SETTLED = 'GROUP_SETTLED',
   REMINDER = 'REMINDER',
@@ -22,13 +22,9 @@ registerEnumType(NotificationType, { name: 'NotificationType' });
 @ObjectType()
 @Entity()
 export class Notification extends BaseDateEntity {
-  @Field()
-  @Column()
-  decription: string;
-
-  @Field()
-  @Column(() => Boolean)
-  isCompleted: boolean;
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  description: string;
 
   @Field(() => User)
   @ManyToOne(() => User, { onDelete: 'SET NULL' })
@@ -50,10 +46,22 @@ export class Notification extends BaseDateEntity {
   group: Group;
 
   @Field(() => Int)
-  @Column('int', { nullable: true })
+  @Column('int')
   groupId: number;
 
   @Field(() => NotificationType)
   @Column({ type: 'enum', enum: NotificationType })
   type: NotificationType;
+
+  @Field(() => [Int])
+  @Column('int', { array: true })
+  readBy: number[];
+
+  @Field(() => Group, { nullable: true })
+  @ManyToOne(() => Notification, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'groupResolvedNotificationId' })
+  groupResolvedNotification: Notification;
+
+  @Column('int', { nullable: true })
+  groupResolvedNotificationId: number;
 }

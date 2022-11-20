@@ -5,7 +5,7 @@ export class InitialMigration1659908900693 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE "cost" ("id" SERIAL NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "name" character varying NOT NULL, "decription" character varying NOT NULL, "createdById" integer, "groupId" integer, CONSTRAINT "PK_9457483cde444b1dd32aacb24bb" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "cost" ("id" SERIAL NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "name" character varying NOT NULL, "description" character varying NOT NULL, "createdById" integer, "groupId" integer, CONSTRAINT "PK_9457483cde444b1dd32aacb24bb" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_9457483cde444b1dd32aacb24b" ON "cost" ("id") `,
@@ -14,7 +14,7 @@ export class InitialMigration1659908900693 implements MigrationInterface {
       `CREATE TYPE "public"."notification_type_enum" AS ENUM('TRANSACTION_RECEIVED', 'GROUP_SETTLED', 'REMINDER')`,
     );
     await queryRunner.query(
-      `CREATE TABLE "notification" ("id" SERIAL NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "decription" character varying NOT NULL, "createdById" integer, "groupId" integer, "type" "public"."notification_type_enum" NOT NULL, CONSTRAINT "PK_705b6c7cdf9b2c2ff7ac7872cb7" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "notification" ("id" SERIAL NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "description" character varying NOT NULL, "createdById" integer, "groupId" integer, "type" "public"."notification_type_enum" NOT NULL, CONSTRAINT "PK_705b6c7cdf9b2c2ff7ac7872cb7" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_705b6c7cdf9b2c2ff7ac7872cb" ON "notification" ("id") `,

@@ -1,6 +1,6 @@
-import { Cost, Transaction, User } from 'src/entities';
-import { ValidaionException } from 'src/shared/exceptions';
-import { TransactionsHandler } from './types';
+import { Cost, Transaction, User } from '../../../../entities';
+import { ValidaionException } from '../../../exceptions';
+import { TransactionsHandler } from '../types';
 
 class SingleMemberHandler implements TransactionsHandler {
   public handleTransactions(

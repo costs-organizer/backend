@@ -10,9 +10,18 @@ import {
 } from 'src/shared/utils';
 import { AddCostCommand, AddCostHandler } from './add-cost';
 import { CqrsModule } from '@nestjs/cqrs';
+import { BullModule } from '@nestjs/bull';
+import { QueueType } from 'src/shared/types';
+import { TransactionConsumer } from 'src/consumers';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cost]), CqrsModule],
+  imports: [
+    TypeOrmModule.forFeature([Cost]),
+    CqrsModule,
+    BullModule.registerQueue({
+      name: QueueType.TransactionQueue,
+    }),
+  ],
   providers: [
     EntityValidator,
     ObjectWithDatesGenerator<Cost>,
@@ -21,6 +30,7 @@ import { CqrsModule } from '@nestjs/cqrs';
     AddCostCommand,
     AddCostHandler,
     TransactionsCalculator,
+    TransactionConsumer,
   ],
 })
 export class CostsModule {}

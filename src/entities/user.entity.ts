@@ -1,7 +1,7 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { IsEmail } from 'class-validator';
 import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
-import { UniqueWhenNotDeleted } from 'src/shared/decorators';
+import { UniqueWhenNotDeleted } from '../shared/decorators';
 import { Group } from './group.entity';
 import { Transaction } from './transaction.entity';
 import { Cost } from './cost.entity';

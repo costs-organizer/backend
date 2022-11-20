@@ -1,11 +1,11 @@
-import { User, Cost, Transaction } from 'src/entities';
+import { plainToClass } from 'class-transformer';
+import { User, Cost, Transaction } from '../../../../entities';
 import {
   BalancesParams,
   TransactionsHandler,
   Vec2TransactionsParams,
-} from './types';
-import BalancesCalculator from './balances-calculator';
-import { plainToClass } from 'class-transformer';
+} from '../types';
+import BalancesCalculator from '../balances-calculator';
 
 import lalolib = require('@swietjak/maths-lib');
 
@@ -17,7 +17,6 @@ class MultipleMembersHandler implements TransactionsHandler {
       members,
       costs,
     );
-    console.log(userBalances);
     const balancesParams = Object.entries(userBalances).reduce(
       (acc, [userId, balance], userIndex) => {
         return {
@@ -61,18 +60,17 @@ class MultipleMembersHandler implements TransactionsHandler {
     let columnIndex = 0;
     let rowIndex = 0;
     const currentDate = new Date();
-    console.log('indexes dict:', membersIndexes);
-    console.log('opt arr:', optimalTransactionsArray);
+
     const transactions = optimalTransactionsArray.reduce(
       (acc, transactionAmount) => {
+        if (columnIndex === rowIndex) {
+          columnIndex++;
+        }
         const convertedTransactionAmount = (transactionAmount * 100) / 100;
         const prevRowIndex = rowIndex;
         const prevColumnIndex = columnIndex;
-        console.log(rowIndex, columnIndex, convertedTransactionAmount);
 
-        columnIndex =
-          prevColumnIndex === prevRowIndex ? columnIndex + 2 : columnIndex + 1;
-
+        columnIndex++;
         if (columnIndex >= members.length) {
           columnIndex = 0;
           rowIndex++;
@@ -87,8 +85,8 @@ class MultipleMembersHandler implements TransactionsHandler {
           ({ id }) => id === membersIndexes[prevRowIndex],
         );
 
-        const payer = convertedTransactionAmount > 0 ? member2 : member1;
-        const receiver = convertedTransactionAmount > 0 ? member1 : member2;
+        const payer = convertedTransactionAmount > 0 ? member1 : member2;
+        const receiver = convertedTransactionAmount > 0 ? member2 : member1;
 
         const newTransaction: Partial<Transaction> = {
           groupId,

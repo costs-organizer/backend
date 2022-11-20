@@ -8,6 +8,8 @@ import { DataSource } from 'typeorm';
 import { Cost, User } from '../../entities';
 import { AddCostCommand } from './add-cost';
 import { CreateCostInput, FindAllCostsInput } from './dto';
+import { JoinCostCommand } from './join-cost';
+import { RemoveCostCommand } from './remove-cost';
 
 @Injectable()
 export class CostsService {
@@ -56,40 +58,10 @@ export class CostsService {
   }
 
   async joinCost(currentUser: User, costId: number) {
-    const [cost] = await this.entityValidator.validateCosts(
-      [costId],
-      currentUser.id,
-    );
-
-    cost.updatedAt = new Date();
-    cost.participants = [...cost.participants, currentUser];
-
-    await this.dataSource.manager.transaction(
-      async (transctionEntityManager) => {
-        await transctionEntityManager.save(cost);
-      },
-    );
-
-    return cost.id;
+    return this.commandBus.execute(new JoinCostCommand(currentUser, costId));
   }
 
   async removeCost(currentUser: User, costId: number) {
-    const [cost] = await this.entityValidator.validateCosts(
-      [costId],
-      currentUser.id,
-    );
-
-    if (cost.createdBy.id !== currentUser.id)
-      throw new ValidaionException('No rights to delete this cost');
-
-    cost.deletedAt = new Date();
-
-    await this.dataSource.manager.transaction(
-      async (transctionEntityManager) => {
-        await transctionEntityManager.save(cost);
-      },
-    );
-
-    return cost.id;
+    return this.commandBus.execute(new RemoveCostCommand(currentUser, costId));
   }
 }

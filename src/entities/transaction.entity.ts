@@ -11,7 +11,8 @@ export class Transaction extends BaseDateEntity {
   @Column('float4', { default: 0 })
   moneyAmount: number;
 
-  @Column(() => Boolean)
+  @Column('boolean', { default: false })
+  @Field(() => Boolean, { nullable: true })
   isCompleted: boolean;
 
   @Field(() => User)

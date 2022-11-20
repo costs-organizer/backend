@@ -1,9 +1,9 @@
 import { plainToClass } from 'class-transformer';
-import { Cost, Transaction, User } from 'src/entities';
-import { ValidaionException } from 'src/shared/exceptions';
-import { EntityRemover } from '../entity-remover';
-import BalancesCalculator from './balances-calculator';
-import { TransactionsHandler } from './types';
+import { Cost, Transaction, User } from '../../../../entities';
+import { ValidaionException } from '../../../exceptions';
+import { EntityRemover } from '../../entity-remover';
+import BalancesCalculator from '../balances-calculator';
+import { TransactionsHandler } from '../types';
 
 class DoubleMemberHandler implements TransactionsHandler {
   private entityRemover = new EntityRemover();
@@ -39,14 +39,14 @@ class DoubleMemberHandler implements TransactionsHandler {
 
     if (currentTransaction)
       return [
-        {
+        plainToClass(Transaction, {
           ...currentTransaction,
           payer,
           receiver,
           moneyAmount,
           updatedAt: new Date(),
           isCompleted: false,
-        },
+        }),
       ];
 
     const newTransaction: Partial<Transaction> = {

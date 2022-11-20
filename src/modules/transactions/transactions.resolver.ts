@@ -3,14 +3,18 @@ import { Transaction, User } from '../../entities';
 import { Inject, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
+import { PUB_SUB } from 'src/shared';
 import { TransactionsService } from './transactions.service';
 import { FindAllTransactionsInput } from './dto';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { NotificationTypes } from 'src/shared/types';
 
 @Resolver(() => Transaction)
 export class TransactionsResolver {
   constructor(
     @Inject(TransactionsService)
     private readonly transactionsService: TransactionsService,
+    @Inject(PUB_SUB) private pubSub: RedisPubSub,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -37,9 +41,21 @@ export class TransactionsResolver {
     @CurrentUser() currentUser: User,
     @Args('transactionId', { type: () => Int }) transactionId: number,
   ): Promise<number> {
-    return await this.transactionsService.completeTransaction(
-      currentUser,
-      transactionId,
-    );
+    const completedTransaction =
+      await this.transactionsService.completeTransaction(
+        currentUser,
+        transactionId,
+      );
+
+    const newNotification =
+      await this.transactionsService.generateCompleteTransactionNotification(
+        completedTransaction,
+      );
+
+    this.pubSub.publish(NotificationTypes.TransactionCompleted, {
+      newNotification,
+    });
+
+    return completedTransaction.id;
   }
 }

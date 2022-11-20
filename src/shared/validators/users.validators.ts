@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Cost, Group, Transaction, User } from 'src/entities';
+import { Cost, Group, Transaction, User, Notification } from 'src/entities';
 import { DataSource } from 'typeorm';
 import { ValidaionException } from '../exceptions';
 
@@ -79,6 +79,7 @@ export class EntityValidator {
     const foundTransactions = await em
       .leftJoinAndSelect('transaction.receiver', 'receiver')
       .leftJoinAndSelect('transaction.payer', 'payer')
+      .leftJoinAndSelect('transaction.group', 'group')
       .andWhere('transaction.id IN (:...transactionIds)', { transactionIds })
       .getMany();
 
@@ -86,5 +87,36 @@ export class EntityValidator {
       throw new ValidaionException('One or more transactions not found');
     }
     return foundTransactions;
+  }
+
+  public async validateNotifications(
+    notificationIds: number[],
+    currentUserId: number,
+  ) {
+    const em = this.dataSource
+      .getRepository(Notification)
+      .createQueryBuilder('notification');
+
+    const foundNotifications = await em
+      .leftJoinAndSelect('notification.createdBy', 'createdBy')
+      .leftJoinAndSelect('notification.receivers', 'receivers')
+      .andWhere('notification.id IN (:...notificationIds)', { notificationIds })
+      .getMany();
+
+    if (foundNotifications.length !== notificationIds.length) {
+      throw new ValidaionException('One or more notifications not found');
+    }
+
+    if (
+      foundNotifications.some(
+        ({ receivers }) =>
+          !receivers.map(({ id }) => id).includes(currentUserId),
+      )
+    ) {
+      throw new ValidaionException(
+        'User has no access to some of the notifications',
+      );
+    }
+    return foundNotifications;
   }
 }

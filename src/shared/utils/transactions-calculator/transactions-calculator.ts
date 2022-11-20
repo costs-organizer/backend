@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Cost, Transaction, User } from 'src/entities';
-import DoubleMemberHandler from './double-members.handler';
-import MultipleMembersHandler from './multiple-members.handler';
-import SingleMemberHandler from './single-member.handler';
+import DoubleMemberHandler from './handlers/double-members.handler';
+import MultipleMembersHandler from './handlers/multiple-members.handler';
+import SingleMemberHandler from './handlers/single-member.handler';
 import { TransactionsHandler } from './types';
 
 @Injectable()
