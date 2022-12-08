@@ -3,7 +3,7 @@ import { Cost, User } from '../../entities';
 import { Inject, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
-import { FindAllCostsInput, CreateCostInput } from './dto';
+import { FindAllCostsInput, CreateCostInput, EditCostInput } from './dto';
 import { CostsService } from './costs.service';
 
 @Resolver(() => Cost)
@@ -55,5 +55,15 @@ export class CostsResolver {
     @Args('costId', { type: () => Int }) costId: number,
   ): Promise<number> {
     return await this.costsService.removeCost(currentUser, costId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Int)
+  async editCost(
+    @CurrentUser() currentUser: User,
+    @Args('editCostInput', { type: () => EditCostInput })
+    costInput: EditCostInput,
+  ): Promise<number> {
+    return await this.costsService.editCost(currentUser, costInput);
   }
 }

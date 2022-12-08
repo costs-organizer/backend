@@ -84,13 +84,52 @@ describe('TransactionsCalculator', () => {
       expect(transaction).toBeDefined();
     });
   });
+  describe('more than two members with one previous transaction', () => {
+    const transactions = tc.calculateTransactions(
+      [user1, user2, user3],
+      [cost1, cost2, cost3, cost4],
+      [finalTransaction1],
+    );
+    // console.log(transactions);
+    it('there should be only two transactions', () => {
+      expect(transactions.length).toEqual(2);
+    });
+    it('user2 should be receiver of both transactions', () => {
+      const [transaction1, transaction2] = transactions;
+      expect([
+        transaction1.receiver.id,
+        transaction2.receiver.id,
+      ]).toStrictEqual([
+        finalTransaction2.receiver.id,
+        finalTransaction3.receiver.id,
+      ]);
+    });
+    it('user1 should pay 20 to user2', () => {
+      const transaction = transactions.find(
+        (t) =>
+          t.moneyAmount === finalTransaction2.moneyAmount &&
+          t.payer.id === finalTransaction2.payer.id &&
+          t.receiver.id === finalTransaction2.receiver.id,
+      );
+      expect(transaction).toBeDefined();
+    });
+    it('user3 should pay 25 to user2', () => {
+      const transaction = transactions.find(
+        (t) =>
+          t.moneyAmount === finalTransaction3.moneyAmount &&
+          t.payer.id === finalTransaction3.payer.id &&
+          t.receiver.id === finalTransaction3.receiver.id,
+      );
+      expect(transaction).toBeDefined();
+    });
+  });
   describe('more than two members with previous transactions', () => {
     const transactions = tc.calculateTransactions(
       [user1, user2, user3],
       [cost1, cost2, cost3, cost4],
       [finalTransaction1, finalTransaction3],
     );
-    console.log(transactions);
+    // console.log(transactions);
     it('there should be only two transactions', () => {
       expect(transactions.length).toEqual(2);
     });

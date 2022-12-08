@@ -1,9 +1,6 @@
-import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { Queue } from 'bull';
 import { ValidaionException } from 'src/shared/exceptions';
-import { QueueType } from 'src/shared/types';
 import { ObjectWithDatesGenerator } from 'src/shared/utils';
 import { EntityValidator } from 'src/shared/validators';
 import { DataSource } from 'typeorm';
@@ -48,17 +45,18 @@ export class TransactionsService {
       currentUser.id,
     );
 
-    return em
+    const transactions = await em
       .leftJoinAndSelect('transaction.receiver', 'receiver')
       .leftJoinAndSelect('transaction.payer', 'payer')
-      .andWhere('transaction.groupId = :groupId', { groupId: group.id })
+      .where('transaction.groupId = :groupId', { groupId: group.id })
       .if(filterByUser, (qb) =>
         qb.andWhere(
-          'payer.id = :currentUserId OR receiver.id = :currentUserId',
+          '(payer.id = :currentUserId OR receiver.id = :currentUserId)',
           { currentUserId: currentUser.id },
         ),
       )
       .getMany();
+    return transactions;
   }
 
   async findOne(currentUser: User, transactionId: number) {

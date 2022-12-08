@@ -22,7 +22,6 @@ export class TransactionConsumer {
     }>,
     done: DoneCallback,
   ) {
-    console.log(`hello, [${process.pid}]`);
     const { groupId } = job.data;
     try {
       const groupCosts = await this.dataSource.manager.find(Cost, {
@@ -66,7 +65,6 @@ export class TransactionConsumer {
         groupCosts,
         groupTransactions,
       );
-      console.log('adding');
       await this.dataSource.manager.transaction(
         async (transctionEntityManager) => {
           await transctionEntityManager.save(newTransactions);
@@ -74,7 +72,6 @@ export class TransactionConsumer {
       );
       done(null);
     } catch (error) {
-      console.log(error);
       done(error);
     }
   }

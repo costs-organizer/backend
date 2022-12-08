@@ -4,7 +4,7 @@ import { ValidaionException } from 'src/shared/exceptions';
 import { ObjectWithDatesGenerator } from 'src/shared/utils';
 import { EntityValidator } from 'src/shared/validators';
 import { DataSource } from 'typeorm';
-import { Group, User } from '../../entities';
+import { Cost, Group, User } from '../../entities';
 import { FindAllGroupsInput, RemoveUserFromGroupInput } from './dto';
 import { AddNewUsersInput } from './dto/add-new-users.input';
 
@@ -22,13 +22,26 @@ export class GroupsService {
     const { search } = body;
     const em = this.dataSource.getRepository(Group).createQueryBuilder('group');
 
-    return await em
+    const test = await em
       .leftJoinAndSelect('group.members', 'members')
       .leftJoinAndSelect('group.createdBy', 'createdBy')
       .leftJoinAndSelect('group.notifications', 'notifications')
       .andWhere('group.deletedAt IS NULL')
       .andWhere('group.name LIKE  :name', { name: `%${search}%` })
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('group.id')
+          .from(Group, 'group')
+          .leftJoinAndSelect('group.members', 'members')
+          .where('members.id = :userId')
+          .select('group.id')
+          .getQuery();
+        return 'group.id IN ' + subQuery;
+      })
+      .setParameters({ userId: currentUser.id })
       .getMany();
+    return test;
   }
 
   async createGroup(groupName: string, createdBy: User, membersIds?: number[]) {
@@ -109,12 +122,19 @@ export class GroupsService {
 
   async findOne(currentUser: User, groupId: number) {
     const em = this.dataSource.getRepository(Group).createQueryBuilder('group');
+
     const res = await em
       .leftJoinAndSelect('group.members', 'members')
       .leftJoinAndSelect('group.createdBy', 'createdBy')
-      .leftJoinAndSelect('group.costs', 'costs')
-      .leftJoinAndSelect('costs.createdBy', 'costCreatedBy')
-      .leftJoinAndSelect('costs.participants', 'costParticipants')
+      .leftJoinAndSelect('group.costs', 'groupCosts')
+      .leftJoinAndSelect('groupCosts.createdBy', 'costCreatedBy')
+      .leftJoinAndSelect('groupCosts.participants', 'costParticipants')
+      .leftJoinAndSelect(
+        'members.participatedCosts',
+        'costs',
+        'costs.groupId = :groupId',
+        { groupId },
+      )
       .andWhere('group.id = :groupId', { groupId })
       .getOneOrFail();
 

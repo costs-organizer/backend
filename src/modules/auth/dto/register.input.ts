@@ -1,5 +1,12 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsIBAN,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 import { Trim } from 'class-sanitizer';
 
 @InputType()
@@ -18,4 +25,14 @@ export class RegisterInput {
   @Trim()
   @Field()
   public readonly name: string;
+
+  @Field({ nullable: true })
+  @Matches(/^\+\d{11,14}$/)
+  @IsOptional()
+  phone?: string | null;
+
+  @Field({ nullable: true })
+  @IsIBAN()
+  @IsOptional()
+  IBAN?: string | null;
 }

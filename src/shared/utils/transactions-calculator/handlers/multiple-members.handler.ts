@@ -66,7 +66,9 @@ class MultipleMembersHandler implements TransactionsHandler {
         if (columnIndex === rowIndex) {
           columnIndex++;
         }
-        const convertedTransactionAmount = (transactionAmount * 100) / 100;
+        const convertedTransactionAmount =
+          Math.round(transactionAmount * 100) / 100;
+
         const prevRowIndex = rowIndex;
         const prevColumnIndex = columnIndex;
 
@@ -129,12 +131,39 @@ class MultipleMembersHandler implements TransactionsHandler {
     });
   }
 
+  private filterOldTransactions(
+    newTransactions: Transaction[],
+    oldTransactions: Transaction[],
+  ) {
+    return oldTransactions.map((oldTransaction) => {
+      const usersIds = [oldTransaction.payer.id, oldTransaction.receiver.id];
+
+      const hasSameUsers = newTransactions.some(
+        (newTransaction) =>
+          usersIds.includes(newTransaction.payer.id) &&
+          usersIds.includes(newTransaction.receiver.id),
+      );
+
+      if (!hasSameUsers)
+        return plainToClass(Transaction, {
+          ...oldTransaction,
+          deletedAt: new Date(),
+        });
+
+      return oldTransaction;
+    });
+  }
+
   public handleTransactions(
     members: User[],
     costs: Cost[],
     transactions: Transaction[],
   ) {
     const newTransactions = this.getNewTransactions(members, costs);
+    const oldTransactions = this.filterOldTransactions(
+      newTransactions,
+      transactions,
+    );
 
     const { filteredNewTransactions, modifiedOldTransactions } =
       newTransactions.reduce(
@@ -160,7 +189,9 @@ class MultipleMembersHandler implements TransactionsHandler {
           return {
             filteredNewTransactions: acc.filteredNewTransactions.filter(
               ({ receiver, payer }) =>
-                usersIds.includes(receiver.id) && usersIds.includes(payer.id),
+                !(
+                  usersIds.includes(receiver.id) && usersIds.includes(payer.id)
+                ),
             ),
             modifiedOldTransactions: [
               ...acc.modifiedOldTransactions.filter(
@@ -172,9 +203,10 @@ class MultipleMembersHandler implements TransactionsHandler {
         },
         {
           filteredNewTransactions: newTransactions,
-          modifiedOldTransactions: transactions,
+          modifiedOldTransactions: oldTransactions,
         },
       );
+
     return [...filteredNewTransactions, ...modifiedOldTransactions];
   }
 }

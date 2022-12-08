@@ -1,5 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { IsEmail } from 'class-validator';
+import { IsEmail, IsIBAN, IsString, Matches } from 'class-validator';
 import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 import { UniqueWhenNotDeleted } from '../shared/decorators';
 import { Group } from './group.entity';
@@ -22,6 +22,18 @@ export class User extends BaseDateEntity {
   @Column()
   @UniqueWhenNotDeleted()
   email: string;
+
+  @IsString()
+  @Field({ nullable: true })
+  @Matches(/^\+[1-9]\d{1,14}$/)
+  @Column({ nullable: true })
+  @UniqueWhenNotDeleted()
+  phone: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  @IsIBAN()
+  IBAN: string;
 
   @Field()
   @Column()

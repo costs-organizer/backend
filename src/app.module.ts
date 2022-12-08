@@ -16,6 +16,8 @@ import { TransactionsModule } from './modules/transactions/transacrions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { BullModule } from '@nestjs/bull';
 import 'dotenv/config';
+import { Context } from 'graphql-ws';
+import { AuthHelper } from './modules/auth';
 
 const envFilePath: string = getEnvPath(`${__dirname}/..`);
 
@@ -23,25 +25,35 @@ const envFilePath: string = getEnvPath(`${__dirname}/..`);
   imports: [
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      path: '/graphql',
-      playground: true,
-      debug: true,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      driver: ApolloDriver,
-      cors: {
-        origin: ['http://localhost:3000', 'https://localhost:3000'],
-        credentials: true,
-      },
-      subscriptions: {
-        'graphql-ws': {
-          connectionInitWaitTimeout: 5000,
-          onSubscribe: () => {
-            console.log('hell');
-          },
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
+      useFactory: async (authHelper: AuthHelper) => ({
+        path: '/graphql',
+        playground: true,
+        debug: true,
+        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+        cors: {
+          origin: ['http://localhost:3000', 'https://localhost:3000'],
+          credentials: true,
         },
-      },
-      context: ({ req, res }) => ({ req, res }),
+        subscriptions: {
+          'graphql-ws': {
+            connectionInitWaitTimeout: 5000,
+            onConnect: async (context: Context<any>) => {
+              const { extra } = context;
+
+              const token = (extra as any).request.headers.cookie?.replace(
+                'Authorization=',
+                '',
+              );
+              (extra as any).user = await authHelper.decode(token);
+            },
+          },
+          context: ({ req, res, extra }) => ({ req, res, extra }),
+        },
+      }),
+      imports: [AuthModule],
+      inject: [AuthHelper],
+      driver: ApolloDriver,
     }),
     BullModule.forRoot({
       redis: {

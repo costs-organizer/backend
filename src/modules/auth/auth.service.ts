@@ -14,8 +14,10 @@ export class AuthService {
   private readonly helper: AuthHelper;
 
   public async register(body: RegisterInput): Promise<User | never> {
-    const { name, email, password }: RegisterInput = body;
-    const user: User = await this.repository.findOne({ where: { email } });
+    const { name, email, password, IBAN, phone }: RegisterInput = body;
+    const user: User = await this.repository.findOne({
+      where: [{ email }, { username: name }],
+    });
 
     if (user) {
       throw new HttpException('Conflict', HttpStatus.CONFLICT);
@@ -27,6 +29,8 @@ export class AuthService {
     newUser.email = email;
     newUser.passwordHash = hash;
     newUser.passwordSalt = salt;
+    newUser.IBAN = IBAN;
+    newUser.phone = phone;
 
     return this.repository.save(newUser);
   }
@@ -37,7 +41,7 @@ export class AuthService {
     const user: User = await em.where('"username" = :name', { name }).getOne();
 
     if (!user) {
-      throw new HttpException('No user found', HttpStatus.NOT_FOUND);
+      throw new HttpException('No user found', HttpStatus.BAD_REQUEST);
     }
 
     const isPasswordValid: boolean = await this.helper.isPasswordValid(
@@ -46,9 +50,8 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new HttpException('No user found', HttpStatus.NOT_FOUND);
+      throw new HttpException('No user found', HttpStatus.BAD_REQUEST);
     }
-
     // this.repository.update(user.id, { lastLoginAt: new Date() });
 
     return this.helper.generateToken(user);

@@ -7,10 +7,10 @@ import { ValidaionException } from 'src/shared/exceptions';
 import { QueueType } from 'src/shared/types';
 import { EntityValidator } from 'src/shared/validators';
 import { DataSource } from 'typeorm';
-import { RemoveCostCommand } from './remove-cost.command';
+import { EditCostCommand } from './edit-cost.command';
 
-@CommandHandler(RemoveCostCommand)
-export class RemoveCostHandler implements ICommandHandler<RemoveCostCommand> {
+@CommandHandler(EditCostCommand)
+export class EditCostHandler implements ICommandHandler<EditCostCommand> {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
     @Inject(EntityValidator)
@@ -19,25 +19,33 @@ export class RemoveCostHandler implements ICommandHandler<RemoveCostCommand> {
     private transactionsQueue: Queue,
   ) {}
 
-  async execute({ costId, currentUser }: RemoveCostCommand): Promise<number> {
-    const [cost] = await this.entityValidator.validateCosts(
-      [costId],
+  async execute({ input, currentUser }: EditCostCommand): Promise<any> {
+    const [costToEdit] = await this.entityValidator.validateCosts(
+      [input.costId],
       currentUser.id,
     );
 
-    if (cost.createdBy.id !== currentUser.id)
+    if (costToEdit.createdBy.id !== currentUser.id)
       throw new ValidaionException('No rights to delete this cost');
 
-    cost.deletedAt = new Date();
+    const participants = await this.entityValidator.validateUsers(
+      input.participantsIds,
+    );
+
+    costToEdit.participants = participants;
+    costToEdit.name = input.name;
+    costToEdit.description = input.description;
+    costToEdit.moneyAmount = input.moneyAmount;
+    costToEdit.updatedAt = new Date();
 
     await this.dataSource.manager.transaction(
       async (transctionEntityManager) => {
-        await transctionEntityManager.save(cost);
+        await transctionEntityManager.save(costToEdit);
       },
     );
 
     const job = await this.transactionsQueue.add({
-      groupId: cost.groupId,
+      groupId: costToEdit.groupId,
     });
 
     return Promise.resolve(Number(job.id));

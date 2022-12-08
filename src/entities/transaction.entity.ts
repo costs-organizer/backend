@@ -2,6 +2,7 @@ import { ObjectType, Field } from '@nestjs/graphql';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseDateEntity } from './base-date-entity';
 import { Group } from './group.entity';
+import { Notification } from './notification.entity';
 import { User } from './user.entity';
 
 @ObjectType()
@@ -41,4 +42,13 @@ export class Transaction extends BaseDateEntity {
   @Field()
   @Column('int', { nullable: true })
   groupId: number;
+
+  @Field(() => Notification)
+  @ManyToOne(() => Notification, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'reminderNotificationId' })
+  reminderNotification: Notification;
+
+  @Field()
+  @Column('int', { nullable: true })
+  reminderNotificationId: number;
 }

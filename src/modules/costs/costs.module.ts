@@ -13,6 +13,9 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { BullModule } from '@nestjs/bull';
 import { QueueType } from 'src/shared/types';
 import { TransactionConsumer } from 'src/consumers';
+import { JoinCostCommand, JoinCostHandler } from './join-cost';
+import { RemoveCostCommand, RemoveCostHandler } from './remove-cost';
+import { EditCostCommand, EditCostHandler } from './edit-cost';
 
 @Module({
   imports: [
@@ -29,6 +32,12 @@ import { TransactionConsumer } from 'src/consumers';
     CostsResolver,
     AddCostCommand,
     AddCostHandler,
+    JoinCostCommand,
+    JoinCostHandler,
+    RemoveCostCommand,
+    RemoveCostHandler,
+    EditCostCommand,
+    EditCostHandler,
     TransactionsCalculator,
     TransactionConsumer,
   ],

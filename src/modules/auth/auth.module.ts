@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { JwtService, JwtModule } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
@@ -26,5 +26,6 @@ dotenv.config();
     TypeOrmModule.forFeature([User]),
   ],
   providers: [AuthResolver, JwtStrategy, AuthHelper, AuthService],
+  exports: [AuthHelper],
 })
 export class AuthModule {}

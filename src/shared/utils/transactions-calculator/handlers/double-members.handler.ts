@@ -9,6 +9,10 @@ class DoubleMemberHandler implements TransactionsHandler {
   private entityRemover = new EntityRemover();
   private balancesCalculator = new BalancesCalculator();
 
+  private normalizeMoneyAmount(moneyAmount: number) {
+    return Math.round(moneyAmount * 100) / 100;
+  }
+
   public handleTransactions(
     members: User[],
     costs: Cost[],
@@ -23,8 +27,8 @@ class DoubleMemberHandler implements TransactionsHandler {
     const balances = this.balancesCalculator.getUsersBalances(members, costs);
     const [member1, member2] = members;
     //TODO: ADD MANTISA CONVERSION
-    const member1Balance = balances[member1.id];
-    const member2Balance = balances[member2.id];
+    const member1Balance = this.normalizeMoneyAmount(balances[member1.id]);
+    const member2Balance = this.normalizeMoneyAmount(balances[member2.id]);
 
     if (member1Balance === member2Balance) {
       return currentTransaction

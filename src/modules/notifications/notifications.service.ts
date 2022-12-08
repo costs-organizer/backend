@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { plainToClass } from 'class-transformer';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { User, Notification, NotificationType } from 'src/entities';
 import { PUB_SUB } from 'src/shared';
@@ -48,11 +49,13 @@ export class NotificationsService {
     );
 
     const currentDate = new Date();
-    const readNotifications = notifications.map((notification) => ({
-      ...notification,
-      readBy: [...notification.readBy, currentUser.id],
-      updatedAt: currentDate,
-    }));
+    const readNotifications = notifications.map((notification) =>
+      plainToClass(Notification, {
+        ...notification,
+        readBy: [...notification.readBy, currentUser.id],
+        updatedAt: currentDate,
+      }),
+    );
 
     await this.dataSource.manager.transaction(
       async (transctionEntityManager) => {
@@ -68,7 +71,6 @@ export class NotificationsService {
     const [transaction] = await this.entityValidator.validateTransactions([
       transactionId,
     ]);
-    console.log(transaction.receiver, currentUser);
     if (currentUser.id !== transaction.receiverId)
       throw new ValidaionException(
         "You can't leave notification on this transaction",
@@ -85,7 +87,19 @@ export class NotificationsService {
     newNotification.readBy = [];
 
     const savedNotification = await em.save(newNotification);
-    console.log(savedNotification);
     return savedNotification;
+  }
+
+  async getUnreadCount(currentUser: User): Promise<number> {
+    const em = this.dataSource
+      .getRepository(Notification)
+      .createQueryBuilder('notification');
+
+    return await em
+      .leftJoinAndSelect('notification.receivers', 'receivers')
+      .andWhere('receivers.id = :userId')
+      .andWhere('NOT(notification."readBy"::text[] @> ARRAY[:userId])')
+      .setParameters({ userId: currentUser.id })
+      .getCount();
   }
 }

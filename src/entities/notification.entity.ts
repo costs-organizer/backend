@@ -56,12 +56,4 @@ export class Notification extends BaseDateEntity {
   @Field(() => [Int])
   @Column('int', { array: true })
   readBy: number[];
-
-  @Field(() => Group, { nullable: true })
-  @ManyToOne(() => Notification, { onDelete: 'SET NULL', nullable: true })
-  @JoinColumn({ name: 'groupResolvedNotificationId' })
-  groupResolvedNotification: Notification;
-
-  @Column('int', { nullable: true })
-  groupResolvedNotificationId: number;
 }

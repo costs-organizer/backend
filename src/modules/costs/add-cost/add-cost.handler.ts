@@ -3,12 +3,9 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { Queue } from 'bull';
-import { Cost, Transaction, User } from 'src/entities';
+import { Cost } from 'src/entities';
 import { QueueType } from 'src/shared/types';
-import {
-  ObjectWithDatesGenerator,
-  TransactionsCalculator,
-} from 'src/shared/utils';
+import { ObjectWithDatesGenerator } from 'src/shared/utils';
 import { EntityValidator } from 'src/shared/validators';
 import { DataSource } from 'typeorm';
 import { AddCostCommand } from './add-cost.command';
@@ -21,8 +18,6 @@ export class AddCostHandler implements ICommandHandler<AddCostCommand> {
     private readonly objectWithDatesGenerator: ObjectWithDatesGenerator<Cost>,
     @Inject(EntityValidator)
     private readonly entityValidator: EntityValidator,
-    @Inject(TransactionsCalculator)
-    private readonly transactionsCalculator: TransactionsCalculator,
     @InjectQueue(QueueType.TransactionQueue) private transactionsQueue: Queue,
   ) {}
 

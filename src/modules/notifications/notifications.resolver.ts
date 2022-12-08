@@ -10,7 +10,7 @@ import {
 } from '@nestjs/graphql';
 import { Request } from 'express';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { Notification, Transaction, User } from 'src/entities';
+import { Notification, User } from 'src/entities';
 import { PUB_SUB } from 'src/shared';
 import { CurrentUser } from 'src/shared/decorators';
 import { NotificationTypes } from 'src/shared/types';
@@ -41,6 +41,12 @@ export class NotificationsResolver {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Query(() => Int)
+  async getUnreadCount(@CurrentUser() currentUser: User) {
+    return this.notificationsService.getUnreadCount(currentUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => [Int])
   async markAsRead(
     @CurrentUser() currentUser: User,
@@ -62,14 +68,14 @@ export class NotificationsResolver {
       currentUser,
       transactionId,
     );
-    await this.pubSub.publish(NotificationTypes.ReminderSent, {
+    await this.pubSub.publish(NotificationTypes.AnyNotification, {
       notification: newNotification,
     });
     return transactionId;
   }
 
   @Subscription(() => Notification, {
-    filter: (payload, variables) => {
+    filter: (payload) => {
       return payload;
     },
   })
@@ -78,13 +84,36 @@ export class NotificationsResolver {
   }
 
   @Subscription(() => Notification, {
+    filter: (payload, variables, context) => {
+      console.log(
+        payload.notification.receivers.some(
+          ({ id }) => id === context.extra.user.id,
+        ),
+      );
+      return payload.notification.receivers.some(
+        ({ id }) => id === context.extra.user.id,
+      );
+    },
     resolve: (value) => {
-      console.log(value);
       return value.notification;
     },
   })
-  async reminderSent(@Context('req') req: Request) {
-    console.log(req);
+  async reminderSent() {
     return this.pubSub.asyncIterator(NotificationTypes.ReminderSent);
+  }
+
+  @Subscription(() => Notification, {
+    filter: (payload, variables, context) => {
+      console.log(payload.notification);
+      return payload.notification.receivers.some(
+        ({ id }) => id === context.extra.user.id,
+      );
+    },
+    resolve: (value) => {
+      return value.notification;
+    },
+  })
+  async notificationSent() {
+    return this.pubSub.asyncIterator(NotificationTypes.AnyNotification);
   }
 }

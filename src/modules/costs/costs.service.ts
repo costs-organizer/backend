@@ -2,12 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { ValidaionException } from 'src/shared/exceptions';
-import { ObjectWithDatesGenerator } from 'src/shared/utils';
 import { EntityValidator } from 'src/shared/validators';
 import { DataSource } from 'typeorm';
 import { Cost, User } from '../../entities';
 import { AddCostCommand } from './add-cost';
-import { CreateCostInput, FindAllCostsInput } from './dto';
+import { CreateCostInput, EditCostInput, FindAllCostsInput } from './dto';
+import { EditCostCommand } from './edit-cost';
 import { JoinCostCommand } from './join-cost';
 import { RemoveCostCommand } from './remove-cost';
 
@@ -15,15 +15,13 @@ import { RemoveCostCommand } from './remove-cost';
 export class CostsService {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
-    @Inject(ObjectWithDatesGenerator<Cost>)
-    private readonly objectWithDatesGenerator: ObjectWithDatesGenerator<Cost>,
     @Inject(EntityValidator)
     private readonly entityValidator: EntityValidator,
     private commandBus: CommandBus,
   ) {}
 
   async findAll(currentUser: User, body: FindAllCostsInput) {
-    const { groupId } = body;
+    const { groupId, filterByName } = body;
     const em = this.dataSource.getRepository(Cost).createQueryBuilder('cost');
 
     const [group] = await this.entityValidator.validateGroups(
@@ -38,9 +36,17 @@ export class CostsService {
 
     return await em
       .innerJoinAndSelect('cost.group', 'group')
-      .innerJoinAndSelect('cost.participants', 'participants')
+      .innerJoinAndSelect('cost.participants', 'costParticipants')
       .innerJoinAndSelect('cost.createdBy', 'createdBy')
       .andWhere('group.id = :groupId', { groupId })
+      .if(filterByName, (qb) =>
+        qb.andWhere(
+          '(createdBy.id = :currentUserId OR costParticipants.id = :currentUserId)',
+          { currentUserId: currentUser.id },
+        ),
+      )
+      .innerJoinAndSelect('cost.participants', 'participants')
+      .orderBy('cost.name')
       .getMany();
   }
 
@@ -63,5 +69,9 @@ export class CostsService {
 
   async removeCost(currentUser: User, costId: number) {
     return this.commandBus.execute(new RemoveCostCommand(currentUser, costId));
+  }
+
+  async editCost(currentUser: User, costInput: EditCostInput) {
+    return this.commandBus.execute(new EditCostCommand(currentUser, costInput));
   }
 }

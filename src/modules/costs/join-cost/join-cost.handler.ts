@@ -5,10 +5,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { Queue } from 'bull';
 import { Cost } from 'src/entities';
 import { QueueType } from 'src/shared/types';
-import {
-  ObjectWithDatesGenerator,
-  TransactionsCalculator,
-} from 'src/shared/utils';
+import { ObjectWithDatesGenerator } from 'src/shared/utils';
 import { EntityValidator } from 'src/shared/validators';
 import { DataSource } from 'typeorm';
 import { JoinCostCommand } from './join-cost.command';
@@ -21,7 +18,6 @@ export class JoinCostHandler implements ICommandHandler<JoinCostCommand> {
     private readonly objectWithDatesGenerator: ObjectWithDatesGenerator<Cost>,
     @Inject(EntityValidator)
     private readonly entityValidator: EntityValidator,
-    @Inject(TransactionsCalculator)
     @InjectQueue(QueueType.TransactionQueue)
     private transactionsQueue: Queue,
   ) {}
