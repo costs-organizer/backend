@@ -110,6 +110,7 @@ class MultipleMembersHandler implements TransactionsHandler {
   private getNewTransactions(members: User[], costs: Cost[]): Transaction[] {
     const [{ groupId }] = costs;
     const constMatrix = this.getConsMat(members.length);
+
     const { balances, membersIndexes } = this.getBalancesParams(members, costs);
     const maximumTransactionsAmount = members.length * (members.length - 1);
     const coeficients = lalolib.ones(maximumTransactionsAmount);
@@ -123,6 +124,7 @@ class MultipleMembersHandler implements TransactionsHandler {
       lowerBoundries,
       [],
     );
+
     return this.vec2Transactions({
       members,
       optimalTransactionsArray,
@@ -131,40 +133,10 @@ class MultipleMembersHandler implements TransactionsHandler {
     });
   }
 
-  private filterOldTransactions(
+  private getFinalTransactions(
     newTransactions: Transaction[],
     oldTransactions: Transaction[],
   ) {
-    return oldTransactions.map((oldTransaction) => {
-      const usersIds = [oldTransaction.payer.id, oldTransaction.receiver.id];
-
-      const hasSameUsers = newTransactions.some(
-        (newTransaction) =>
-          usersIds.includes(newTransaction.payer.id) &&
-          usersIds.includes(newTransaction.receiver.id),
-      );
-
-      if (!hasSameUsers)
-        return plainToClass(Transaction, {
-          ...oldTransaction,
-          deletedAt: new Date(),
-        });
-
-      return oldTransaction;
-    });
-  }
-
-  public handleTransactions(
-    members: User[],
-    costs: Cost[],
-    transactions: Transaction[],
-  ) {
-    const newTransactions = this.getNewTransactions(members, costs);
-    const oldTransactions = this.filterOldTransactions(
-      newTransactions,
-      transactions,
-    );
-
     const { filteredNewTransactions, modifiedOldTransactions } =
       newTransactions.reduce(
         (acc, curr) => {
@@ -208,6 +180,43 @@ class MultipleMembersHandler implements TransactionsHandler {
       );
 
     return [...filteredNewTransactions, ...modifiedOldTransactions];
+  }
+
+  private filterOldTransactions(
+    newTransactions: Transaction[],
+    oldTransactions: Transaction[],
+  ) {
+    return oldTransactions.map((oldTransaction) => {
+      const usersIds = [oldTransaction.payer.id, oldTransaction.receiver.id];
+
+      const hasSameUsers = newTransactions.some(
+        (newTransaction) =>
+          usersIds.includes(newTransaction.payer.id) &&
+          usersIds.includes(newTransaction.receiver.id),
+      );
+
+      if (!hasSameUsers)
+        return plainToClass(Transaction, {
+          ...oldTransaction,
+          deletedAt: new Date(),
+        });
+
+      return oldTransaction;
+    });
+  }
+
+  public handleTransactions(
+    members: User[],
+    costs: Cost[],
+    transactions: Transaction[],
+  ) {
+    const newTransactions = this.getNewTransactions(members, costs);
+    const oldTransactions = this.filterOldTransactions(
+      newTransactions,
+      transactions,
+    );
+
+    return this.getFinalTransactions(newTransactions, oldTransactions);
   }
 }
 

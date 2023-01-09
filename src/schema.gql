@@ -43,6 +43,7 @@ type Transaction {
   groupId: Float!
   reminderNotification: Notification!
   reminderNotificationId: Float!
+  confirmationFileURL: String
 }
 
 type Cost {
@@ -97,6 +98,11 @@ type User {
   createdNotifications: [Notification!]!
 }
 
+type GetTransactionConfirmationFileOutput {
+  base64File: String!
+  filename: String!
+}
+
 type Query {
   users(findAllInput: FindAllUsersInput!): [User!]!
   user(id: Int!): User!
@@ -107,6 +113,7 @@ type Query {
   costs(findAllInput: FindAllCostsInput!): [Cost!]!
   transactions(findAllInput: FindAllTransactionsInput!): [Transaction!]!
   transaction(transactionId: Int!): Transaction!
+  getTransactionConfirmationFile(transactionId: Int!): GetTransactionConfirmationFileOutput!
   notifications: [Notification!]!
   findOne(notificationId: Int!): Notification!
   getUnreadCount: Int!
@@ -144,8 +151,8 @@ type Mutation {
   joinCost(costId: Int!): Int!
   removeCost(costId: Int!): Int!
   editCost(editCostInput: EditCostInput!): Int!
-  completeTransaction(transactionId: Int!): Int!
-  uploadConfirmation(file: Upload!, transactionId: Int!): Int!
+  uploadConmfirmationFile(file: Upload!): String!
+  completeTransaction(transactionId: Int!, fileURL: String): Int!
   markAsRead(notificationIds: [Int!]!): [Int!]!
   sendReminder(transactionId: Int!): Int!
 }

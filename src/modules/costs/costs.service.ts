@@ -1,62 +1,24 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { ValidaionException } from 'src/shared/exceptions';
-import { EntityValidator } from 'src/shared/validators';
-import { DataSource } from 'typeorm';
-import { Cost, User } from '../../entities';
+import { Injectable } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { User } from '../../entities';
 import { AddCostCommand } from './add-cost';
 import { CreateCostInput, EditCostInput, FindAllCostsInput } from './dto';
 import { EditCostCommand } from './edit-cost';
+import { GetCostQuery } from './get-cost';
+import { GetCostsQuery } from './get-costs';
 import { JoinCostCommand } from './join-cost';
 import { RemoveCostCommand } from './remove-cost';
 
 @Injectable()
 export class CostsService {
-  constructor(
-    @InjectDataSource() private dataSource: DataSource,
-    @Inject(EntityValidator)
-    private readonly entityValidator: EntityValidator,
-    private commandBus: CommandBus,
-  ) {}
+  constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   async findAll(currentUser: User, body: FindAllCostsInput) {
-    const { groupId, filterByName } = body;
-    const em = this.dataSource.getRepository(Cost).createQueryBuilder('cost');
-
-    const [group] = await this.entityValidator.validateGroups(
-      [groupId],
-      currentUser.id,
-    );
-
-    if (!group.members.some((member) => member.id === currentUser.id))
-      throw new ValidaionException(
-        'Cannot view cost unless you are member of the group',
-      );
-
-    return await em
-      .innerJoinAndSelect('cost.group', 'group')
-      .innerJoinAndSelect('cost.participants', 'costParticipants')
-      .innerJoinAndSelect('cost.createdBy', 'createdBy')
-      .andWhere('group.id = :groupId', { groupId })
-      .if(filterByName, (qb) =>
-        qb.andWhere(
-          '(createdBy.id = :currentUserId OR costParticipants.id = :currentUserId)',
-          { currentUserId: currentUser.id },
-        ),
-      )
-      .innerJoinAndSelect('cost.participants', 'participants')
-      .orderBy('cost.name')
-      .getMany();
+    return await this.queryBus.execute(new GetCostsQuery(currentUser, body));
   }
 
   async findOne(currentUser: User, id: number) {
-    const [cost] = await this.entityValidator.validateCosts(
-      [id],
-      currentUser.id,
-    );
-
-    return cost;
+    return await this.queryBus.execute(new GetCostQuery(currentUser, id));
   }
 
   async createCost(currentUser: User, body: CreateCostInput) {

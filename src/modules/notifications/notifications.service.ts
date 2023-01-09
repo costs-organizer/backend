@@ -30,6 +30,7 @@ export class NotificationsService {
       .leftJoinAndSelect('notification.receivers', 'receivers')
       .leftJoinAndSelect('notification.group', 'group')
       .andWhere('receivers.id = :userId', { userId: currentUser.id })
+      .orderBy('notification.createdAt', 'DESC')
       .getMany();
   }
 

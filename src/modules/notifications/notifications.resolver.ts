@@ -6,9 +6,7 @@ import {
   Query,
   Mutation,
   Subscription,
-  Context,
 } from '@nestjs/graphql';
-import { Request } from 'express';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { Notification, User } from 'src/entities';
 import { PUB_SUB } from 'src/shared';
@@ -85,11 +83,6 @@ export class NotificationsResolver {
 
   @Subscription(() => Notification, {
     filter: (payload, variables, context) => {
-      console.log(
-        payload.notification.receivers.some(
-          ({ id }) => id === context.extra.user.id,
-        ),
-      );
       return payload.notification.receivers.some(
         ({ id }) => id === context.extra.user.id,
       );
@@ -104,7 +97,6 @@ export class NotificationsResolver {
 
   @Subscription(() => Notification, {
     filter: (payload, variables, context) => {
-      console.log(payload.notification);
       return payload.notification.receivers.some(
         ({ id }) => id === context.extra.user.id,
       );

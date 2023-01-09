@@ -16,6 +16,8 @@ import { TransactionConsumer } from 'src/consumers';
 import { JoinCostCommand, JoinCostHandler } from './join-cost';
 import { RemoveCostCommand, RemoveCostHandler } from './remove-cost';
 import { EditCostCommand, EditCostHandler } from './edit-cost';
+import { GetCostHandler, GetCostQuery } from './get-cost';
+import { GetCostsHandler, GetCostsQuery } from './get-costs';
 
 @Module({
   imports: [
@@ -40,6 +42,10 @@ import { EditCostCommand, EditCostHandler } from './edit-cost';
     EditCostHandler,
     TransactionsCalculator,
     TransactionConsumer,
+    GetCostQuery,
+    GetCostHandler,
+    GetCostsQuery,
+    GetCostsHandler,
   ],
 })
 export class CostsModule {}

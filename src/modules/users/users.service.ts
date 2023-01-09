@@ -62,8 +62,6 @@ export class UsersService {
     const { id, email, newPassword, oldPassword, username, IBAN, phone } =
       editMeInput;
 
-    console.log(currentUser);
-
     if (currentUser.id !== id) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }

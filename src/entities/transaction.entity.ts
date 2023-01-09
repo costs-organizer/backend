@@ -51,4 +51,8 @@ export class Transaction extends BaseDateEntity {
   @Field()
   @Column('int', { nullable: true })
   reminderNotificationId: number;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  confirmationFileURL: string | null;
 }

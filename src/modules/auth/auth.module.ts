@@ -16,7 +16,6 @@ dotenv.config();
     PassportModule.register({ defaultStrategy: 'jwt', property: 'user' }),
     JwtModule.registerAsync({
       useFactory: () => {
-        console.log('key:', process.env.JWT_KEY, process.env.JWT_EXPIRES);
         return {
           secretOrPrivateKey: process.env.JWT_KEY,
           signOptions: { expiresIn: process.env.JWT_EXPIRES },

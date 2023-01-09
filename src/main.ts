@@ -8,16 +8,18 @@ import { Queue } from 'bull';
 import * as cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { graphqlUploadExpress } from 'graphql-upload';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import './shared/extensions';
 import { QueueType } from './shared/types';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const config: ConfigService = app.get(ConfigService);
+
+  app.use(helmet());
+
   app.use(graphqlUploadExpress());
-  const port: number = config.get<number>('PORT');
-  console.log(port);
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.enableCors({
     credentials: true,
@@ -35,6 +37,8 @@ async function bootstrap() {
   });
   app.use('/bull-board', serverAdapter.getRouter());
 
+  const config: ConfigService = app.get(ConfigService);
+  const port: number = config.get<number>('PORT');
   await app.listen(port, () => {
     console.log('[WEB]', config.get<string>('BASE_URL'));
   });

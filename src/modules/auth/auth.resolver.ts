@@ -21,7 +21,6 @@ export class AuthResolver {
   ) {
     const token = await this.authService.login(loginInput);
     req.res.cookie('Authorization', token);
-    console.log(token);
     return token;
   }
 
@@ -30,9 +29,4 @@ export class AuthResolver {
     req.res.clearCookie('Authorization');
     return '';
   }
-
-  // @Mutation(() => User)
-  // updateUser(@Args('updateUserInput') updateUserInput: LoginInput) {
-  //   return this.usersService.update(updateUserInput.id, updateUserInput);
-  // }
 }

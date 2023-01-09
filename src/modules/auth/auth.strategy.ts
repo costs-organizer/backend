@@ -14,14 +14,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly helper: AuthHelper;
 
   constructor() {
-    console.log('jwtkey:', process.env.JWT_KEY);
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         JwtStrategy.extractJWT,
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       secretOrKey: process.env.JWT_KEY,
-      ignoreExpiration: true,
     });
   }
 

@@ -26,7 +26,7 @@ class DoubleMemberHandler implements TransactionsHandler {
     const [currentTransaction] = transactions;
     const balances = this.balancesCalculator.getUsersBalances(members, costs);
     const [member1, member2] = members;
-    //TODO: ADD MANTISA CONVERSION
+
     const member1Balance = this.normalizeMoneyAmount(balances[member1.id]);
     const member2Balance = this.normalizeMoneyAmount(balances[member2.id]);
 

@@ -1,9 +1,17 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
+import 'dotenv/config';
+import { promises as fs } from 'fs';
+import { FileUpload } from 'graphql-upload';
+import { join } from 'path';
 import { ValidaionException } from 'src/shared/exceptions';
-import { ObjectWithDatesGenerator } from 'src/shared/utils';
+import {
+  ObjectWithDatesGenerator,
+  uploadToGoogleCloud,
+} from 'src/shared/utils';
 import { EntityValidator } from 'src/shared/validators';
 import { DataSource } from 'typeorm';
+import { v4 as uuid } from 'uuid';
 import {
   Notification,
   NotificationType,
@@ -67,15 +75,20 @@ export class TransactionsService {
     return transaction;
   }
 
-  async completeTransaction(currentUser: User, transactionId: number) {
+  async completeTransaction(
+    currentUser: User,
+    transactionId: number,
+    fileURL?: string | null,
+  ) {
     const [transaction] = await this.entityValidator.validateTransactions([
       transactionId,
     ]);
 
-    if (transaction.isCompleted)
-      throw new ValidaionException('Transaction already completed');
-
     this.validateUserParticipationInTransaction(currentUser, transaction);
+
+    if (fileURL) {
+      transaction.confirmationFileURL = fileURL;
+    }
 
     transaction.updatedAt = new Date();
     transaction.isCompleted = true;
@@ -87,6 +100,23 @@ export class TransactionsService {
     );
 
     return transaction;
+  }
+
+  async uploadConmfirmationFile(file: FileUpload) {
+    const { createReadStream, filename } = await file;
+
+    const uuidHash = await uuid();
+    const newFileName = `${uuidHash}-${filename}`;
+    try {
+      uploadToGoogleCloud(createReadStream, newFileName);
+    } catch (err) {
+      throw new HttpException(
+        'Error with google cloud storage',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return `https://storage.googleapis.com/${process.env.GCP_BUCKET_ID}/${newFileName}`;
   }
 
   async generateCompleteTransactionNotification(transaction: Transaction) {
@@ -104,5 +134,28 @@ export class TransactionsService {
     const savedNotification = await em.save(newNotification);
 
     return savedNotification;
+  }
+
+  async getTransactionConfirmationFile(
+    currentUser: User,
+    transactionId: number,
+  ) {
+    const [transaction] = await this.entityValidator.validateTransactions([
+      transactionId,
+    ]);
+    this.validateUserParticipationInTransaction(currentUser, transaction);
+
+    if (Boolean(transaction.confirmationFileURL))
+      throw new HttpException(
+        'This application has no confirmation file',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    const base64File = await fs.readFile(
+      join(process.cwd(), `./uploads/${transaction.confirmationFileURL}`),
+      'base64',
+    );
+
+    return { base64File, filename: transaction.confirmationFileURL };
   }
 }

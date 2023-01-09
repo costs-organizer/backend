@@ -5,12 +5,13 @@ import { JwtAuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
 import { PUB_SUB } from 'src/shared';
 import { TransactionsService } from './transactions.service';
-import { FindAllTransactionsInput } from './dto';
+import {
+  FindAllTransactionsInput,
+  GetTransactionConfirmationFileOutput,
+} from './dto';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { NotificationTypes } from 'src/shared/types';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
-import { createWriteStream } from 'fs';
-import { join } from 'path';
 
 @Resolver(() => Transaction)
 export class TransactionsResolver {
@@ -39,43 +40,52 @@ export class TransactionsResolver {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Mutation(() => Int)
-  async completeTransaction(
-    @CurrentUser() currentUser: User,
-    @Args('transactionId', { type: () => Int }) transactionId: number,
-  ): Promise<number> {
-    const completedTransaction =
-      await this.transactionsService.completeTransaction(
-        currentUser,
-        transactionId,
-      );
+  @Mutation(() => String)
+  async uploadConmfirmationFile(
+    @Args('file', { type: () => GraphQLUpload })
+    file: FileUpload,
+  ) {
+    const actionOutput = await this.transactionsService.uploadConmfirmationFile(
+      file,
+    );
 
-    const newNotification =
-      await this.transactionsService.generateCompleteTransactionNotification(
-        completedTransaction,
-      );
-
-    this.pubSub.publish(NotificationTypes.AnyNotification, {
-      newNotification,
-    });
-
-    return completedTransaction.id;
+    return actionOutput;
   }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Int)
-  async uploadConfirmation(
+  async completeTransaction(
     @CurrentUser() currentUser: User,
-    @Args('file', { type: () => GraphQLUpload }) file: FileUpload,
     @Args('transactionId', { type: () => Int }) transactionId: number,
+    @Args('fileURL', { type: () => String, nullable: true })
+    fileURL?: string | null,
   ): Promise<number> {
-    const { createReadStream, filename } = await file;
-    new Promise(async (resolve) =>
-      createReadStream()
-        .pipe(createWriteStream(join(process.cwd(), 'upload')))
-        .on('finish', () => resolve({ image: filename })),
+    const actionOutput = await this.transactionsService.completeTransaction(
+      currentUser,
+      transactionId,
+      fileURL,
     );
-    console.log(createReadStream, filename);
-    return transactionId;
+
+    const newNotification =
+      await this.transactionsService.generateCompleteTransactionNotification(
+        actionOutput,
+      );
+    this.pubSub.publish(NotificationTypes.AnyNotification, {
+      newNotification,
+    });
+
+    return actionOutput.id;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Query(() => GetTransactionConfirmationFileOutput)
+  async getTransactionConfirmationFile(
+    @CurrentUser() currentUser: User,
+    @Args('transactionId', { type: () => Int }) transactionId: number,
+  ): Promise<GetTransactionConfirmationFileOutput> {
+    return await this.transactionsService.getTransactionConfirmationFile(
+      currentUser,
+      transactionId,
+    );
   }
 }

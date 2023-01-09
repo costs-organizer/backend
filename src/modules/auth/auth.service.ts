@@ -13,14 +13,23 @@ export class AuthService {
   @Inject(AuthHelper)
   private readonly helper: AuthHelper;
 
+  private getRegisterErrorMessage(input: RegisterInput, user: User) {
+    if (user.email === input.email) return 'email';
+    if (user.username === input.name) return 'username';
+    if (user.phone === input.phone) return 'phone';
+
+    return '';
+  }
+
   public async register(body: RegisterInput): Promise<User | never> {
     const { name, email, password, IBAN, phone }: RegisterInput = body;
     const user: User = await this.repository.findOne({
-      where: [{ email }, { username: name }],
+      where: [{ email }, { username: name }, { phone }],
     });
 
     if (user) {
-      throw new HttpException('Conflict', HttpStatus.CONFLICT);
+      const message = this.getRegisterErrorMessage(body, user);
+      throw new HttpException(message, HttpStatus.CONFLICT);
     }
 
     const newUser: User = new User();
@@ -41,7 +50,10 @@ export class AuthService {
     const user: User = await em.where('"username" = :name', { name }).getOne();
 
     if (!user) {
-      throw new HttpException('No user found', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Bad username or password',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const isPasswordValid: boolean = await this.helper.isPasswordValid(
@@ -50,7 +62,10 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new HttpException('No user found', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Bad username or password',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     // this.repository.update(user.id, { lastLoginAt: new Date() });
 
