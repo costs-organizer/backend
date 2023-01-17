@@ -1,0 +1,14 @@
+{
+  "endOfLine": "auto",
+  "parser": "babel-ts",
+  "singleQuote": true,
+  "trailingComma": "all",
+  "importOrder": [
+    "<THIRD_PARTY_MODULES>",
+    "^config",
+    "^shared\\/",
+    "^[./](?!.+\\.(\\w){1})",
+    "^[./].+\\.(\\w){1}"
+  ],
+  "experimentalBabelParserPluginsList": ["classProperties", "jsx", "typescript", "decorators-legacy", "decorators"]
+}

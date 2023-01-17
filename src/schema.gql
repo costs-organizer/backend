@@ -1,0 +1,221 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Notification {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  description: String
+  createdBy: User!
+  createdById: Int!
+  receivers: [User!]!
+  group: Group!
+  groupId: Int!
+  type: NotificationType!
+  readBy: [Int!]!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum NotificationType {
+  TRANSACTION_RECEIVED
+  GROUP_SETTLED
+  REMINDER
+}
+
+type Transaction {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  moneyAmount: Float!
+  isCompleted: Boolean
+  receiver: User!
+  receiverId: Float!
+  payer: User!
+  payerId: Float!
+  group: Group!
+  groupId: Float!
+  reminderNotification: Notification!
+  reminderNotificationId: Float!
+  confirmationFileURL: String
+}
+
+type Cost {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  name: String!
+  description: String!
+  moneyAmount: Float!
+  createdBy: User!
+  createdById: Float!
+  participants: [User!]!
+  group: [Group!]!
+  groupId: Float!
+}
+
+type Group {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  name: String!
+  createdBy: User!
+  createdById: User!
+  members: [User!]!
+  transactions: [Transaction!]!
+  costs: [Cost!]!
+  notifications: [Notification!]!
+  groupResolvedNotification: Notification!
+  groupResolvedNotificationId: Notification!
+}
+
+type User {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  username: String!
+  email: String!
+  phone: String
+  IBAN: String
+  passwordHash: String!
+  passwordSalt: String!
+  createdGroups: [Group!]!
+  joinedGroups: [Group!]!
+  receivedTransactions: [Transaction!]!
+  paidTransactions: [Transaction!]!
+  participatedCosts: [Cost!]!
+  createdCosts: [Cost!]!
+  receivedNotifications: [Notification!]!
+  createdNotifications: [Notification!]!
+}
+
+type GetTransactionConfirmationFileOutput {
+  base64File: String!
+  filename: String!
+}
+
+type Query {
+  users(findAllInput: FindAllUsersInput!): [User!]!
+  user(id: Int!): User!
+  me: User!
+  groups(findAllInput: FindAllGroupsInput!): [Group!]!
+  group(id: Int!): Group!
+  cost(id: Int!): Cost!
+  costs(findAllInput: FindAllCostsInput!): [Cost!]!
+  transactions(findAllInput: FindAllTransactionsInput!): [Transaction!]!
+  transaction(transactionId: Int!): Transaction!
+  getTransactionConfirmationFile(transactionId: Int!): GetTransactionConfirmationFileOutput!
+  notifications: [Notification!]!
+  findOne(notificationId: Int!): Notification!
+  getUnreadCount: Int!
+}
+
+input FindAllUsersInput {
+  search: String
+  groupId: Float
+}
+
+input FindAllGroupsInput {
+  search: String = ""
+}
+
+input FindAllCostsInput {
+  groupId: Int!
+  filterByName: Boolean = false
+}
+
+input FindAllTransactionsInput {
+  groupId: Int!
+  filterByUser: Boolean = false
+}
+
+type Mutation {
+  register(registerInput: RegisterInput!): User!
+  login(loginInput: LoginInput!): String!
+  logout: String!
+  removeUser(id: Int!): User!
+  editMe(editMeInput: EditMeInput!): Int!
+  createGroup(createGroupInput: CreateGroupInput!): Int!
+  addNewUsers(addNewUsersInput: AddNewUsersInput!): [Int!]!
+  removeUserFromGroup(removeUserFromGroupInput: RemoveUserFromGroupInput!): Int!
+  createCost(createCostInput: CreateCostInput!): Int!
+  joinCost(costId: Int!): Int!
+  removeCost(costId: Int!): Int!
+  editCost(editCostInput: EditCostInput!): Int!
+  uploadConmfirmationFile(file: Upload!): String!
+  completeTransaction(transactionId: Int!, fileURL: String): Int!
+  markAsRead(notificationIds: [Int!]!): [Int!]!
+  sendReminder(transactionId: Int!): Int!
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+  name: String!
+  phone: String
+  IBAN: String
+}
+
+input LoginInput {
+  password: String!
+  name: String!
+}
+
+input EditMeInput {
+  id: Int!
+  email: String!
+  oldPassword: String
+  newPassword: String
+  username: String!
+  phone: String
+  IBAN: String
+}
+
+input CreateGroupInput {
+  name: String!
+  userIds: [Int!]!
+}
+
+input AddNewUsersInput {
+  groupId: Int!
+  userIds: [Int!]!
+}
+
+input RemoveUserFromGroupInput {
+  groupId: Int!
+  userId: Int!
+}
+
+input CreateCostInput {
+  name: String!
+  description: String!
+  moneyAmount: Int!
+  participantsIds: [Int!]!
+  groupId: Int!
+}
+
+input EditCostInput {
+  costId: Int!
+  name: String!
+  description: String!
+  moneyAmount: Int!
+  participantsIds: [Int!]!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+type Subscription {
+  transactionCompleted: Notification!
+  reminderSent: Notification!
+  notificationSent: Notification!
+}
