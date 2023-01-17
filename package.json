@@ -45,7 +45,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/platform-fastify": "^9.0.11",
     "@nestjs/typeorm": "^9.0.0",
-    "@swietjak/maths-lib": "../maths-lib",
+    "@swietjak/maths-lib": "1.1.3",
     "apollo-server-express": "^3.10.0",
     "apollo-server-fastify": "^3.10.1",
     "bcryptjs": "^2.4.3",

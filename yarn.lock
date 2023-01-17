@@ -1265,8 +1265,10 @@
   resolved "https://registry.yarnpkg.com/@sqltools/formatter/-/formatter-1.2.3.tgz#1185726610acc37317ddab11c3c7f9066966bd20"
   integrity sha512-O3uyB/JbkAEMZaP3YqyHH7TMnex7tWyCbCI4EfJdOCoN6HIhqdJBWTM6aCCiWQ/5f5wxjgU735QAIpJbjDvmzg==
 
-"@swietjak/maths-lib@../maths-lib":
-  version "1.1.2"
+"@swietjak/maths-lib@1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@swietjak/maths-lib/-/maths-lib-1.1.3.tgz#8c318b7d206871734c85053f45c77f353271ee49"
+  integrity sha512-p5cvcjfFbz6+vbxYV6DqT4xZ2mOL45x5mXG7p5pX5drbA1gnX0hMQMH8XqdVaErP7zdIqpsksQd2CHP2O93d8A==
 
 "@tootallnate/once@2":
   version "2.0.0"
